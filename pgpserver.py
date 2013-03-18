@@ -30,7 +30,7 @@ import os
 import sys
 import cgi
 import BaseHTTPServer
-from subprocess import call
+import subprocess
 from urlparse import urlparse, parse_qs
 
 class RequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
@@ -57,31 +57,8 @@ class RequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(self._post_status())
        
-        """
-        self.wfile.write('Client: %s\n' % str(self.client_address))
-        self.wfile.write('Path: %s\n' % self.path)
-        self.wfile.write('Form data:\n')
-        """
 
-        # Echo back information about what was posted in the form 
         for field in form.keys():
-            """
-            Para manejar archivos
-
-            field_item = form[field]
-            if field_item.filename:
-                # The field contains an uploaded file
-                file_data = field_item.file.read()
-                file_len = len(file_data)
-                del file_data
-                self.wfile.write('\tUploaded %s (%d bytes)\n' % (field, file_len))
-            else:
-            """
-            """mostramos los datos enviados por post"""
-            """
-            self.wfile.write('\t%s=%s\n' % (field, form[field].value))
-            """
-
             if field == "arch":
                arch=form[field].value
                print arch
@@ -109,24 +86,10 @@ class RequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
 
             print "clave=%s valor=%s" % (field, form[field].value)
 
-        if desktop == "lxde":
-           if arch=="i386":
-              taskLihuen="lihuen-lxde-base lihuen-lxde-desktop lihuen-base lihuen-i386"
-           else:
-              taskLihuen="lihuen-lxde-base lihuen-lxde-desktop lihuen-base lihuen-amd64"
-        elif desktop=="cinnamon":
-           if arch=="i386":
-              taskLihuen="lihuen-lxde-base lihuen-cinnamon-desktop lihuen-base lihuen-i386"
-           else:
-              taskLihuen="lihuen-lxde-base lihuen-cinnamon-desktop lihuen-base lihuen-amd64"
-
-        call(["cd ", "/usr/src/lihuen/Lihuen/testing"])
-
-        comando="--architectures %s --binary-images iso-hybrid --bootstrapLihuen "user-setup" --chroot-filesystem %s --debian-installer live --debian-installer-gui %s --distribution %s --parent-distribution %s --parent-debian-installer-distribution %s --iso-application %s --lihuenChroot '/usr/src/lihuen/Lihuen/testing' --iso-volume %s  --parent-mirror-chroot %s --parent-mirror-binary %s --mirror-bootstrap %s --mirror-chroot %s --section-lihuen 'wheezy/experimental' --mirror-lihuen 'http://repo.lihuen.linti.unlp.edu.ar/lihuen' --archive-areas %s --archives-areas-lihuen 'main contrib non-free' --taskLihuen %s" % (arch,filesystem,di,distro,distro,distro,nombreiso,nombreiso,repoextra,repoextra,repoextra,area,taskLihuen)
-
-        print comando
-
-        call(["lb config", "--architectures arch --binary-images iso-hybrid --bootstrapLihuen "user-setup" --chroot-filesystem filesystem --debian-installer live --debian-installer-gui di --distribution distro --parent-distribution distro --parent-debian-installer-distribution distro --iso-application nombre --lihuenChroot '/usr/src/lihuen/Lihuen/testing' --iso-volume nombreiso  --parent-mirror-chroot repoextra --parent-mirror-binary repoextra --mirror-bootstrap repoextra  --mirror-chroot repoextra --section-lihuen 'wheezy/experimental' --mirror-lihuen 'http://repo.lihuen.linti.unlp.edu.ar/lihuen' --archive-areas area --archives-areas-lihuen 'main contrib non-free' --taskLihuen taskLihuen"])
+        str="cd /usr/src/lihuen/Lihuen/testing;./configLihuen.sh %s %s http://%s/debian %s %s %s %s %s" % (arch,nombreiso,repo,desktop,filesystem,di,area,distro)
+        p = subprocess.Popen(str, stdout=subprocess.PIPE, shell=True)
+        (output, err) = p.communicate()
+        print output
 
         return
 
